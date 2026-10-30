@@ -23,7 +23,7 @@ export default function GlobalTools() {
 
   return <>
     <aside className="global-tools" aria-label={t('common.help')}>
-      <button type="button" className="tool-button help-button" onClick={() => setHelpOpen(true)}>
+      <button type="button" className="tool-button help-button" onClick={() => setHelpOpen(true)} aria-label={t('common.help')} title={t('common.help')}>
         <span aria-hidden="true">?</span><span>{t('common.help')}</span>
       </button>
       <label className={`language-tool${toastVisible ? ' language-tool-pulse' : ''}`}>
