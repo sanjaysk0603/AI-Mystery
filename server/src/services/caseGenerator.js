@@ -105,6 +105,12 @@ async function withConcurrency(items, limit, worker) {
   return results;
 }
 
+function languageInstruction(language) {
+  if (language === 'ta') return 'Write every player-facing and secret narrative field in natural, clear Tamil using Tamil script. Use believable Tamil given names written in Tamil script.';
+  if (language === 'tanglish') return 'Write every player-facing and secret narrative field in natural Tanglish: colloquial Tamil written in Latin script, like Tamil people commonly type in WhatsApp, with familiar everyday English code-switching. Use believable Tamil given names in Latin letters.';
+  return 'Write every narrative field in English. Use believable Tamil-origin given names written in Latin letters for all suspects and people in the story (for example Arul, Nila, Kavin, Meena, Yazhini, or Saravanan).';
+}
+
 function biblePrompt(scenario, settings) {
   return `Create the CASE BIBLE for a fair, solvable, fully fictional detective mystery. Return one JSON object and no markdown.\n
 Required JSON shape (include every field):\n{
@@ -119,17 +125,23 @@ Required JSON shape (include every field):\n{
   "redHerrings":[{"id":"r1","description":"string","misdirectsTo":"innocent suspect id"}],
   "hints":["hint 1","hint 2","hint 3"]
 }\n
-Scenario: ${scenario}\nDifficulty: ${settings.difficulty}. Return exactly ${settings.suspectCount} suspects, with IDs s1 through s${settings.suspectCount}; use exactly three hints.\nRules: there is exactly one culprit. Every innocent suspect has a verifiable true alibi or an explicit innocent explanation. Include at least three key clues that jointly identify the culprit, and at least two red herrings. Every key clue's points field must be the culprit's valid suspect ID; clue type must be chat, photo, or cctv. All references and timestamps must be consistent. The briefing must be 150-250 words. Use fictional names and places. Keep a cozy-to-noir tone, with no graphic violence, actionable crime instructions, real-person likenesses, or real cases.`;
+Scenario: ${scenario}\nDifficulty: ${settings.difficulty}. Return exactly ${settings.suspectCount} suspects, with IDs s1 through s${settings.suspectCount}; use exactly three hints.\nLanguage and names: ${languageInstruction(settings.language)}\nRules: there is exactly one culprit. Every innocent suspect has a verifiable true alibi or an explicit innocent explanation. Include at least three key clues that jointly identify the culprit, and at least two red herrings. Every key clue's points field must be the culprit's valid suspect ID; clue type must be chat, photo, or cctv. All references and timestamps must be consistent. The briefing must be 150-250 words. Use fictional places. Keep a cozy-to-noir tone, with no graphic violence, actionable crime instructions, real-person likenesses, or real cases.`;
 }
 
-function evidencePrompt(bible) {
+function evidencePrompt(bible, language) {
   return `Write only the player-visible EVIDENCE for this fictional mystery. Return one JSON object and no markdown, with exactly these top-level keys and fields:\n{
   "chats":[{"id":"chat-1","title":"string","participants":["exact suspect name"],"messages":[{"sender":"exact suspect name","text":"string","timestamp":"HH:mm","type":"text"}]}],
   "photos":[{"id":"photo-1","caption":"string","timestamp":"HH:mm","location":"string","imagePrompt":"ordinary fictional phone photo, no readable text or identifiable real people","relatedClueId":"k1"}],
   "cctv":[{"id":"camera-1","cameraName":"string","location":"string","frames":[{"offsetSeconds":0,"timestamp":"HH:mm","imagePrompt":"fictional low-quality CCTV frame, no readable text or identifiable real people","caption":"string"}]}]
 }\n
-Generate 3-6 chats, 4-8 photos, and 2-4 CCTV cameras. Each camera needs 4-8 chronologically ordered frames. Include each key clue in the evidence type assigned in the bible; captions or chat text must state any information that could be missed in an image. Keep every timestamp consistent with the case timeline. Add believable irrelevant chat banter. Use the exact suspect names and preserve the evidence ID formats shown. Never reveal the culprit, motive, method, secret, or solution in player-visible text.\nCASE BIBLE: ${JSON.stringify(bible)}`;
+Generate 3-6 chats, 4-8 photos, and 2-4 CCTV cameras. Each camera needs 4-8 chronologically ordered frames. Include each key clue in the evidence type assigned in the bible; captions or chat text must state any information that could be missed in an image. Keep every timestamp consistent with the case timeline. Add believable irrelevant chat banter. Use the exact suspect names and preserve the evidence ID formats shown. Write every player-visible field in the selected case language: ${languageInstruction(language)} Never reveal the culprit, motive, method, secret, or solution in player-visible text.\nCASE BIBLE: ${JSON.stringify(bible)}`;
 }
+
+const walkthroughLead = {
+  en: 'The decisive evidence appears in these clues:',
+  ta: 'தீர்மானிக்கும் தடயங்கள் இவை:',
+  tanglish: 'Mudivukku kondu pogum mukkiya clues ivai:',
+};
 
 function placeholder(label, id) {
   const safeLabel = String(label).replace(/[&<>"']/g, '');
@@ -143,7 +155,7 @@ export async function generateMysteryText(scenario, settings, onProgress = async
   if (bible.suspects.length !== Number(settings.suspectCount || 4) || !bible.suspects.some((suspect) => suspect.id === bible.culpritId)) throw new Error('Generated case did not match the requested suspect count.');
   if (bible.keyClues.filter((clue) => clue.points === bible.culpritId).length < 3) throw new Error('Generated clues do not support the intended solution.');
   await onProgress('Planting clues', 22);
-  const evidence = await generateJson(evidencePrompt(bible), evidenceSchema);
+  const evidence = await generateJson(evidencePrompt(bible, settings.language), evidenceSchema);
   await onProgress('Writing the chats', 42);
   return { bible, evidence };
 }
@@ -174,7 +186,7 @@ export async function generateMysteryCase(scenario, settings, caseId = `temporar
     culpritId: bible.culpritId, motive: bible.motive, method: bible.method, timeline: bible.timeline,
     keyClues: bible.keyClues, redHerrings: bible.redHerrings, hints: bible.hints,
     suspectSecrets: bible.suspects.map(({ id, secret: suspectSecret, alibi, alibiIsTrue }) => ({ id, secret: suspectSecret, alibi, alibiIsTrue })),
-    walkthrough: `${bible.motive} ${bible.method} The decisive evidence is identified in the clue descriptions: ${bible.keyClues.map((clue) => `${clue.id} (${clue.description})`).join('; ')}.`,
+    walkthrough: `${bible.motive} ${bible.method} ${walkthroughLead[settings.language] || walkthroughLead.en} ${bible.keyClues.map((clue) => `${clue.id} (${clue.description})`).join('; ')}.`,
   };
   return { public: publicData, secret };
 }

@@ -8,11 +8,14 @@ import NewCasePage from './pages/NewCasePage.jsx';
 import GeneratingPage from './pages/GeneratingPage.jsx';
 import InvestigationPage from './pages/InvestigationPage.jsx';
 import ResultPage from './pages/ResultPage.jsx';
+import { PreferencesProvider, usePreferences } from './context/PreferencesContext.jsx';
+import GlobalTools from './components/GlobalTools.jsx';
 
 function ProtectedRoute({ children }) {
   const { user, loading } = useContext(AuthContext);
+  const { t } = usePreferences();
 
-  if (loading) return <div className="p-8 text-center text-slate-200">Loading…</div>;
+  if (loading) return <div className="p-8 text-center text-slate-200">{t('dashboard.loading')}</div>;
   if (!user) return <Navigate to="/login" replace />;
 
   return children;
@@ -35,8 +38,11 @@ function AppRoutes() {
 
 export default function App() {
   return (
-    <AuthProvider>
-      <AppRoutes />
-    </AuthProvider>
+    <PreferencesProvider>
+      <AuthProvider>
+        <AppRoutes />
+        <GlobalTools />
+      </AuthProvider>
+    </PreferencesProvider>
   );
 }

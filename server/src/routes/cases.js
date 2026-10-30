@@ -17,7 +17,7 @@ const createCaseSchema = z.object({
   settings: z.object({
     difficulty: z.enum(['easy', 'medium', 'hard']).default('medium'),
     suspectCount: z.number().int().min(3).max(6).default(4),
-    language: z.string().default('en'),
+    language: z.enum(['ta', 'tanglish', 'en']).default('en'),
   }).default({ difficulty: 'medium', suspectCount: 4, language: 'en' }),
 });
 

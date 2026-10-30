@@ -1,14 +1,28 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { createCase } from '../lib/api.js';
+import { usePreferences } from '../context/PreferencesContext.jsx';
 
 export default function NewCasePage() {
   const navigate = useNavigate();
-  const [form, setForm] = useState({
-    scenario: 'A necklace disappeared from a birthday party at a college hostel.',
-    settings: { difficulty: 'medium', suspectCount: 4, language: 'en' },
-  });
+  const { language, t } = usePreferences();
+  const [form, setForm] = useState(() => ({
+    scenario: language === 'ta' ? 'கல்லூரி விடுதியில் பிறந்தநாள் விருந்தின்போது ஒரு சங்கிலி காணாமல் போனது.' : language === 'tanglish' ? 'College hostel birthday party-la oru necklace missing aayiduchu.' : 'A necklace disappeared from a birthday party at a college hostel.',
+    settings: { difficulty: 'medium', suspectCount: 4, language },
+  }));
   const [error, setError] = useState('');
+
+  useEffect(() => {
+    setForm((current) => {
+      const samples = [
+        'A necklace disappeared from a birthday party at a college hostel.',
+        'கல்லூரி விடுதியில் பிறந்தநாள் விருந்தின்போது ஒரு சங்கிலி காணாமல் போனது.',
+        'College hostel birthday party-la oru necklace missing aayiduchu.',
+      ];
+      const scenario = samples.includes(current.scenario) ? t('new.sample') : current.scenario;
+      return { ...current, scenario, settings: { ...current.settings, language } };
+    });
+  }, [language, t]);
 
   async function handleSubmit(event) {
     event.preventDefault();
@@ -23,35 +37,45 @@ export default function NewCasePage() {
   }
 
   return (
-    <main className="min-h-screen bg-slate-950 p-6 text-slate-100">
-      <div className="mx-auto max-w-2xl rounded-2xl border border-amber-500/20 bg-slate-900/80 p-8 shadow-glow">
-        <h1 className="mb-6 font-serif text-4xl text-amber-100">Create a new mystery</h1>
+    <main className="case-shell min-h-screen bg-slate-950 p-6 pb-24 text-slate-100">
+      <div className="animate-case-in mx-auto max-w-2xl rounded-2xl border border-amber-500/20 bg-slate-900/80 p-8 shadow-glow">
+        <h1 className="mb-6 font-serif text-4xl text-amber-100">{t('new.title')}</h1>
 
         <form onSubmit={handleSubmit} className="space-y-5">
           <label className="block">
-            <span className="mb-2 block text-sm text-slate-300">Scenario</span>
-            <textarea rows="5" value={form.scenario} onChange={(e) => setForm({ ...form, scenario: e.target.value })} className="w-full rounded-lg border border-slate-700 bg-slate-950 px-3 py-2 text-slate-100" />
+            <span className="mb-2 block text-sm text-slate-300">{t('new.scenario')}</span>
+            <textarea rows="5" minLength="20" maxLength="1000" value={form.scenario} onChange={(e) => setForm({ ...form, scenario: e.target.value })} className="w-full rounded-lg border border-slate-700 bg-slate-950 px-3 py-2 text-slate-100" />
+            <span className="mt-1 block text-xs text-slate-500">{t('new.scenarioHint')}</span>
           </label>
 
           <div className="grid gap-4 md:grid-cols-2">
             <label className="block">
-              <span className="mb-2 block text-sm text-slate-300">Difficulty</span>
+              <span className="mb-2 block text-sm text-slate-300">{t('new.difficulty')}</span>
               <select value={form.settings.difficulty} onChange={(e) => setForm({ ...form, settings: { ...form.settings, difficulty: e.target.value } })} className="w-full rounded-lg border border-slate-700 bg-slate-950 px-3 py-2 text-slate-100">
-                <option value="easy">Easy</option>
-                <option value="medium">Medium</option>
-                <option value="hard">Hard</option>
+                <option value="easy">{t('new.easy')}</option>
+                <option value="medium">{t('new.medium')}</option>
+                <option value="hard">{t('new.hard')}</option>
               </select>
             </label>
 
             <label className="block">
-              <span className="mb-2 block text-sm text-slate-300">Suspects</span>
+              <span className="mb-2 block text-sm text-slate-300">{t('new.suspects')}</span>
               <input type="number" min="3" max="6" value={form.settings.suspectCount} onChange={(e) => setForm({ ...form, settings: { ...form.settings, suspectCount: Number(e.target.value) } })} className="w-full rounded-lg border border-slate-700 bg-slate-950 px-3 py-2 text-slate-100" />
+            </label>
+
+            <label className="block md:col-span-2">
+              <span className="mb-2 block text-sm text-slate-300">{t('new.language')}</span>
+              <select value={form.settings.language} onChange={(event) => setForm({ ...form, settings: { ...form.settings, language: event.target.value } })} className="w-full rounded-lg border border-slate-700 bg-slate-950 px-3 py-2 text-slate-100">
+                <option value="ta">தமிழ்</option>
+                <option value="tanglish">Tanglish</option>
+                <option value="en">English</option>
+              </select>
             </label>
           </div>
 
           {error && <p className="text-sm text-rose-400">{error}</p>}
 
-          <button type="submit" className="rounded-full bg-amber-500 px-6 py-3 font-medium text-slate-900">Create case</button>
+          <button type="submit" className="rounded-full bg-amber-500 px-6 py-3 font-medium text-slate-900">{t('new.create')}</button>
         </form>
       </div>
     </main>
