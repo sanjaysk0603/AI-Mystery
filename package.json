@@ -9,7 +9,7 @@
   "scripts": {
     "test": "npm --prefix server test && npm --prefix client test",
     "lint": "npm --prefix server run lint && npm --prefix client run lint",
-    "build": "npm --prefix client run build",
+    "build": "npm --prefix client run build && npm --prefix server run build",
     "dev": "npm --prefix server run dev & npm --prefix client run dev"
   }
 }

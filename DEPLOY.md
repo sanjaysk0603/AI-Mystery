@@ -1,59 +1,103 @@
 # Deploy AI Mystery Room on Render
 
-This deployment uses one Render web service for the React app and Express API, MongoDB Atlas for database storage, and a Render persistent disk for generated images. The client calls `/api` on the same origin, so no separate frontend host is needed.
+This app is deployed as one Render Node web service. Express serves the Vite build from `client/dist` and serves JSON endpoints under `/api`, so browser requests and the httpOnly authentication cookie use one origin. MongoDB Atlas stores app records. The Blueprint creates a 1 GB persistent disk for generated images.
 
-## Costs and requirements
+## Before you start
 
-- Render Starter web service: currently listed at **$7/month**.
-- Render disk: **$0.25 per GB per month**; this blueprint provisions 1 GB.
-- MongoDB Atlas Free cluster: suitable for a small demo; review its storage and connection limits before production use.
-- Gemini API: model usage is billed or quota-limited by Google. Image quota exhaustion produces playable placeholder cards.
-
-Render persistent disks require a paid web service and preserve uploads across deploys. See [Render pricing](https://render.com/pricing) and [persistent disk documentation](https://render.com/docs/disks). Atlas offers a [Free cluster](https://www.mongodb.com/docs/atlas/reference/free-shared-limitations/).
+- A GitHub account and this project pushed to a GitHub repository.
+- A MongoDB Atlas account and database connection string.
+- A Gemini API key with access to the configured text and image models.
+- A Render account. Check Render's current pricing before choosing a paid instance; the Blueprint includes a persistent disk.
 
 ## 1. Push the project to GitHub
 
-Create an empty GitHub repository, then run these commands from the project root. Replace the remote URL with your repository URL:
+In PowerShell, from the project root, use the commands below. Replace the URL with your GitHub repository URL. If the repo already has a remote, skip the `git remote add` line. Review `git status` before pushing and make sure no `.env` file is listed.
 
 ```powershell
-git init
+git status
 git add .
-git commit -m "Prepare AI Mystery Room deployment"
+git commit -m "chore: prepare Render deployment"
 git branch -M main
 git remote add origin https://github.com/YOUR-ACCOUNT/YOUR-REPOSITORY.git
 git push -u origin main
 ```
 
-The local `.env` files are ignored by `.gitignore`. Do not force-add them or put API keys in the repository.
+If there is already a commit containing these changes, `git commit` may say there is nothing to commit; continue with the push. Never use `git add -f` on `.env` files.
 
-## 2. Create a MongoDB Atlas database
+## 2. Create the MongoDB Atlas database
 
-1. Create an Atlas project and a **Free** cluster.
-2. Create a database user with a unique, strong password and read/write access to the app database.
-3. In **Network Access**, allow connections from the Render service. Prefer a fixed outbound IP and a narrow allowlist entry when your Render setup provides one. For a quick demo, Atlas can allow `0.0.0.0/0`; this exposes the database endpoint to connection attempts from any IP, so use a strong database password and never share the URI.
-4. Choose **Connect → Drivers** and copy the `mongodb+srv://...` connection string. Replace its password placeholder, URL-encoding special characters in the password if needed.
+1. In MongoDB Atlas, create a project and a cluster.
+2. Under **Database Access**, create a database user with a strong, unique password and read/write access to the app database.
+3. Under **Network Access**, add `0.0.0.0/0` so Render can connect from its changing outbound IP addresses. Use a strong database password and do not share the URI.
+4. Select **Connect**, then **Drivers**. Copy the connection string and replace its username, password, and database name as prompted. URL-encode special characters in the password.
 
-Atlas requires both a database user and an IP access-list entry before the app can connect. See [Connect to an Atlas cluster](https://www.mongodb.com/docs/atlas/connect-to-database-deployment/) and [Atlas IP access lists](https://www.mongodb.com/docs/atlas/security/ip-access-list/).
+## 3. Create the Render service from the Blueprint
 
-## 3. Create the Render service
+1. Sign in to Render and click **New +** then **Blueprint**.
+2. Connect GitHub if prompted, then choose the repository containing this project and the `main` branch.
+3. Review the service named `ai-mystery-room`; Render reads `render.yaml`. Apply the Blueprint.
+4. In the service's **Environment** page, enter the values for `MONGODB_URI` and `GEMINI_API_KEY` (the names and sources are listed below). Keep the generated `JWT_SECRET` private. The other Blueprint values are already set.
+5. Wait for the build and deploy to finish. The service URL should be `https://ai-mystery-room.onrender.com`. If Render shows another URL, change `CLIENT_ORIGIN` to that exact origin (no trailing slash), save, and redeploy.
 
-1. In Render, choose **New → Blueprint** and connect the GitHub repository.
-2. Render reads [`render.yaml`](render.yaml), builds the React client, starts Express, and provisions a 1 GB persistent disk mounted at `/var/data`.
-3. When prompted for `MONGODB_URI`, paste the Atlas connection string. For `GEMINI_API_KEY`, enter the server-side key from Google AI Studio. Render generates `JWT_SECRET` automatically.
-4. Apply the Blueprint and wait for the first deploy to finish.
+The Blueprint uses `npm ci && npm run build`, starts the server with `npm --prefix server start`, and checks `/api/health`. `VITE_API_URL=/api` is supplied during the client build. The server listens on Render's `PORT`.
 
-The service uses the URL `https://ai-mystery-room.onrender.com`, matching `CLIENT_ORIGIN` in the Blueprint. If Render assigns a different URL, update `CLIENT_ORIGIN` in the service environment to the exact `https://...` origin and redeploy.
+### Create it manually instead
 
-## 4. Verify the deployment
+1. In Render, click **New +** then **Web Service**, connect GitHub, and select the repository and `main` branch.
+2. Select **Node** as the runtime and use these settings:
+   - Build command: `npm ci && npm run build`
+   - Start command: `npm --prefix server start`
+   - Health check path: `/api/health`
+3. Add the environment variables in the table below. Set `NODE_ENV=production`, `VITE_API_URL=/api`, `STORAGE_DRIVER=local`, and `LOCAL_UPLOAD_DIR=/var/data/uploads`.
+4. Add a persistent disk named `mystery-uploads`, mounted at `/var/data`, with at least 1 GB. Without a disk or S3, generated images are lost on instance restart.
+5. Set `CLIENT_ORIGIN` to the exact service URL Render assigns, save, and deploy.
 
-1. Open `https://ai-mystery-room.onrender.com/api/health`. It should return `{"ok":true,"database":"connected"}`.
-2. Open the site, register a test account, log in, and create a small case.
-3. If a case remains at “Creating case”, inspect the Render service logs. Gemini text calls use the configured fallback model. Image API quota errors are logged and use placeholders; they should not prevent a case from becoming playable.
+## 4. Environment variables in Render
 
-## 5. Optional custom domain
+Set these in the single web service's **Environment** page:
 
-Add the domain in Render, configure the DNS records Render provides, then change `CLIENT_ORIGIN` to the exact `https://your-domain` origin and redeploy. Keep the frontend and API on the same Render service unless you also update the client API URL and CORS configuration.
+| Name | Where the value comes from |
+| --- | --- |
+| `MONGODB_URI` | MongoDB Atlas **Connect > Drivers** connection string, with database name and encoded password |
+| `JWT_SECRET` | Generate a random secret of at least 32 characters, or keep the value generated by the Blueprint |
+| `CLIENT_ORIGIN` | The service's exact public URL, such as `https://ai-mystery-room.onrender.com` |
+| `GEMINI_API_KEY` | Google AI Studio; keep this server-side and private |
+| `GEMINI_TEXT_MODEL` | Text model name available to your Gemini API account |
+| `GEMINI_TEXT_FALLBACK_MODEL` | Fallback text model name available to your Gemini API account |
+| `GEMINI_IMAGE_MODEL` | Image model name available to your Gemini API account; Blueprint default is `gemini-3.1-flash-image` |
+| `MAX_ACTIVE_CASES_PER_USER` | Optional limit; Blueprint sets `3` |
+| `STORAGE_DRIVER` | `local` (Blueprint uses its persistent disk) or `s3` |
+| `LOCAL_UPLOAD_DIR` | Blueprint sets `/var/data/uploads`; use a path on the mounted disk |
+| `AWS_REGION` | Required only when `STORAGE_DRIVER=s3` |
+| `AWS_S3_BUCKET` | Required only when `STORAGE_DRIVER=s3` |
+| `AWS_ACCESS_KEY_ID` | Required only when `STORAGE_DRIVER=s3`; use a least-privilege AWS credential |
+| `AWS_SECRET_ACCESS_KEY` | Required only when `STORAGE_DRIVER=s3`; keep it private |
 
-## Data migration
+`PORT` is assigned by Render. `NODE_ENV=production` and `VITE_API_URL=/api` are set by the Blueprint. S3 variables are unnecessary when using the Blueprint's persistent disk. If local storage is used without a mounted persistent disk, generated images disappear when the instance is replaced or restarted.
 
-The deployed Atlas database starts empty. Local users and cases are not copied automatically; migrate the local MongoDB database separately if you need to keep them.
+## 5. Verify the deployment
+
+1. Open `https://YOUR-SERVICE.onrender.com/api/health`. A connected service returns HTTP 200 and `{"ok":true,"database":"connected"}`.
+2. Open `https://YOUR-SERVICE.onrender.com/`. The landing page should load.
+3. Register a new account and sign in. The session should persist through the httpOnly cookie.
+4. Create a case using a fictional scenario of at least 20 characters. It should return to the progress screen and eventually become ready.
+5. Open the case and verify suspects and evidence load. Submit an accusation to verify the result flow.
+
+## Common failures in Render logs
+
+| Log or symptom | Likely cause and fix |
+| --- | --- |
+| `Missing or invalid env vars: ...` | Add the named value in Render's Environment page and redeploy. |
+| `Unable to connect to MongoDB` or health returns 503 | Check `MONGODB_URI`, Atlas database user/password, URL encoding, and Atlas Network Access includes `0.0.0.0/0`. |
+| Build reports missing `client/dist` or the landing page returns 500 | Check the build log; ensure `npm ci && npm run build` completed and the client build succeeded. |
+| Browser login/API requests fail or CORS errors appear | Confirm the browser and API use the same Render service, then set `CLIENT_ORIGIN` to the exact public origin and redeploy. |
+| Cookie is not saved on the deployed site | Confirm `NODE_ENV=production`, HTTPS is used, and the client uses `/api` on the same domain. |
+| `gemini_moderation_error`, `gemini_retry`, or `case_generation_failed` | Inspect the server-side error details for invalid API key/model, quota or rate limit (429), unavailable service (5xx), timeout, or invalid model output. Never paste secret values into logs or tickets. |
+| `gemini_image_retry` or image placeholders | Check image model access, quota, and S3 permissions if enabled. Text cases can still be playable with placeholders. |
+| Images work, then break after restart | With `STORAGE_DRIVER=local`, verify the persistent disk is mounted at `/var/data` and `LOCAL_UPLOAD_DIR=/var/data/uploads`; otherwise configure S3. |
+
+## Custom domain
+
+Add a custom domain in the Render service settings, configure the DNS records Render provides, then set `CLIENT_ORIGIN` to the exact custom HTTPS origin and redeploy. Keep the client and API on this same service.
+
+The Atlas database on Render is separate from a local development database. Local accounts and cases are not migrated automatically.

@@ -18,6 +18,19 @@ const blockedPatterns = [
   'bank robbery',
 ];
 
+function logModerationError(error, model, attempt) {
+  if (process.env.NODE_ENV === 'test') return;
+  console.error(JSON.stringify({
+    event: 'gemini_moderation_error', model, attempt,
+    error: {
+      name: error?.name || 'Error',
+      message: error?.message || String(error),
+      status: error?.status || error?.statusCode || null,
+      stack: error?.stack || null,
+    },
+  }));
+}
+
 export async function moderateScenario(scenario) {
   const clean = String(scenario || '').trim();
   if (!clean || clean.length < 20) {
@@ -42,7 +55,7 @@ export async function moderateScenario(scenario) {
         ? { allowed: true, reason: 'Scenario passed moderation.' }
         : { allowed: false, reason: 'Please rewrite the scenario without real people or unsafe content.' };
     } catch (error) {
-      if (process.env.NODE_ENV !== 'test') console.warn(JSON.stringify({ event: 'gemini_moderation_retry', model, attempt: attempt + 1, status: error.status || null }));
+      logModerationError(error, model, attempt + 1);
       if (attempt < 2) await new Promise((resolve) => setTimeout(resolve, 500 * (2 ** attempt)));
     }
   }

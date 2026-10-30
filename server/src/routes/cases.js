@@ -71,7 +71,7 @@ async function generateInBackground(entry) {
     entry.status = 'ready';
     entry.progress = { stage: 'Ready', percent: 100 };
   } catch (error) {
-    if (process.env.NODE_ENV !== 'test') console.error('Case generation failed.');
+    if (process.env.NODE_ENV !== 'test') console.error(JSON.stringify({ event: 'case_generation_failed', caseId: entry._id, error: { message: error?.message || String(error), stack: error?.stack || null } }));
     entry.status = 'failed';
     entry.failureReason = 'We couldn’t finish this mystery. Please try again.';
     entry.progress = { stage: 'Failed', percent: 100 };

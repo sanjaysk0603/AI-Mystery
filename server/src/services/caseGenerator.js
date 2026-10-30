@@ -23,6 +23,20 @@ const evidenceSchema = z.object({
 const ai = new GoogleGenAI({ apiKey: env.GEMINI_API_KEY });
 let imageQuotaPausedUntil = 0;
 
+function logGeminiError(event, error, details = {}) {
+  if (process.env.NODE_ENV === 'test') return;
+  console.error(JSON.stringify({
+    event,
+    ...details,
+    error: {
+      name: error?.name || 'Error',
+      message: error?.message || String(error),
+      status: error?.status || error?.statusCode || null,
+      stack: error?.stack || null,
+    },
+  }));
+}
+
 async function generateJson(prompt, schema, model = env.GEMINI_TEXT_MODEL, timeoutMs = 60_000) {
   let lastError;
   for (let attempt = 0; attempt < 3; attempt += 1) {
@@ -40,11 +54,11 @@ async function generateJson(prompt, schema, model = env.GEMINI_TEXT_MODEL, timeo
       return parsed;
     } catch (error) {
       lastError = error;
-      if (process.env.NODE_ENV !== 'test') console.warn(JSON.stringify({ event: 'gemini_retry', model: modelToUse, status: error.status || null, latencyMs: Date.now() - started, attempt: attempt + 1 }));
+      logGeminiError('gemini_retry', error, { model: modelToUse, latencyMs: Date.now() - started, attempt: attempt + 1 });
       if (attempt < 2) await new Promise((resolve) => setTimeout(resolve, 500 * (2 ** attempt)));
     }
   }
-  throw new Error(`Mystery generation failed: ${lastError?.message || 'unknown error'}`);
+  throw new Error(`Mystery generation failed: ${lastError?.message || 'unknown error'}`, { cause: lastError });
 }
 
 async function generateStoredImage(prompt, key) {
@@ -64,6 +78,7 @@ async function generateStoredImage(prompt, key) {
       console.info(JSON.stringify({ event: 'gemini_image', model: env.GEMINI_IMAGE_MODEL, latencyMs: Date.now() - started, attempt: attempt + 1 }));
       return { url, imageStatus: 'ready' };
     } catch (error) {
+      logGeminiError('gemini_image_retry', error, { model: env.GEMINI_IMAGE_MODEL, attempt: attempt + 1 });
       if (error.status === 429) {
         imageQuotaPausedUntil = Date.now() + (5 * 60 * 1000);
         if (process.env.NODE_ENV !== 'test') console.warn(JSON.stringify({ event: 'gemini_image_quota', model: env.GEMINI_IMAGE_MODEL, cooldownSeconds: 300 }));
