@@ -51,7 +51,9 @@ Core loop: Enter scenario → AI builds case → Study evidence → Accuse a sus
 
 Target users: Casual players who enjoy detective games and puzzles. Single-player only.
 
-Tone: Fictional, clever, slightly noir. All people, places and events in generated cases are fictional.
+Tone: Fictional, clever, slightly noir. All people and events in generated cases are fictional. Real places from the approved Coimbatore and Cuddalore location guide may be used as neutral settings; do not imply that real residents, staff, businesses, institutions, or religious organizations took part in fictional events.
+
+Approved setting guide: Coimbatore locations include Race Course, R.S. Puram, Town Hall, Government Arts College, Government Men's Hostel, SS Briyani Hotel, Valankulam Lake, Ukkadam Lake/Periyakulam, Ganapathy, Singanallur, Lakshmi Mills, Marudhamalai Temple, and Isha Yoga Center. Cuddalore district locations include Panruti, Neyveli Lignite Corporation (NLC), Natarajar Temple in Chidambaram, Silver Beach, Devanampattinam, and Fort St. David. Their real identities may be named; all people and story events remain invented, respectful, non-criminal, and harmless. Do not depict real incidents or allege wrongdoing by any named establishment or institution.
 
 2. Goals and Non-Goals
 Goals (v1)
@@ -72,7 +74,7 @@ Real video generation (see Section 7.4: CCTV is simulated).
 
 Payments, subscriptions, or a mobile app.
 
-Using real people's names, photos or real incidents.
+Using real people's names, photos or real incidents. Real place names are allowed only as neutral settings; fictional case events must not be presented as real incidents.
 
 User-uploaded evidence.
 
@@ -199,7 +201,7 @@ Input: scenario, difficulty, suspect count. Output (JSON, validated by Zod):
 "hints": [ "string", "string", "string" ]
 }
 
-Rules baked into the prompt: exactly one culprit; every non-culprit has a verifiable true alibi or a clear innocent explanation; at least 3 key clues that together (not alone) identify the culprit; at least 2 red herrings; the culprit must not be the most obviously suspicious person on easy; names and places are fictional; scenario theme is respected.
+Rules baked into the prompt: exactly one fictional person responsible for the harmless mystery; every other suspect has a clear innocent explanation; at least 3 key clues that together (not alone) identify the solution; at least 2 harmless red herrings; the responsible person must not be the most obviously suspicious person on easy; people and events are fictional, and approved real locations are used only as neutral settings; scenario theme is respected. Location-based cases are non-criminal and must not involve violence, theft, fraud, damage, or illegal activity.
 
 7.2 Stage 2 — Evidence Text
 From the Case Bible, generate:

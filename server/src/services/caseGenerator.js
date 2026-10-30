@@ -106,17 +106,53 @@ async function withConcurrency(items, limit, worker) {
 }
 
 function languageInstruction(language) {
-  if (language === 'ta') return 'Write every player-facing and secret narrative field in natural, clear Tamil using Tamil script. Use believable Tamil given names written in Tamil script.';
-  if (language === 'tanglish') return 'Write every player-facing and secret narrative field in natural Tanglish: colloquial Tamil written in Latin script, like Tamil people commonly type in WhatsApp, with familiar everyday English code-switching. Use believable Tamil given names in Latin letters.';
-  return 'Write every narrative field in English. Use believable Tamil-origin given names written in Latin letters for all suspects and people in the story (for example Arul, Nila, Kavin, Meena, Yazhini, or Saravanan).';
+  if (language === 'ta') return 'Write every player-facing and secret narrative field in natural, clear Tamil using Tamil script. Give every person a distinct, authentic Tamil name, preferably choosing from: அருள்மொழி, இளங்கோ, செழியன், கதிரவன், பொன்னி, யாழினி, தென்றல், கயல்விழி, இனியா, அமுதன், நிலவன், எழிலன், மலர்விழி, வெண்பா, பூங்கொடி, செம்பியன், தமிழரசி, மாறன், அன்பரசி, பொன்மணி. Do not reuse names or use North Indian or generic placeholder names.';
+  if (language === 'tanglish') return 'Write every player-facing and secret narrative field in natural Tanglish: colloquial Tamil written in Latin script, like Tamil people commonly type in WhatsApp, with familiar everyday English code-switching. Give every person a distinct, authentic Tamil name in Latin letters, preferably choosing from: Arulmozhi, Ilango, Sezhiyan, Kathiravan, Ponni, Yazhini, Thendral, Kayalvizhi, Iniya, Amudhan, Nilavan, Ezhilan, Malarvizhi, Venba, Poongodi, Sembiyan, Thamizharsi, Maaran, Anbarasi, Ponmani. Do not reuse names or use North Indian or generic placeholder names.';
+  return 'Write every narrative field in English. Give every person a distinct, authentic Tamil-origin name in Latin letters, preferably choosing from: Arulmozhi, Ilango, Sezhiyan, Kathiravan, Ponni, Yazhini, Thendral, Kayalvizhi, Iniya, Amudhan, Nilavan, Ezhilan, Malarvizhi, Venba, Poongodi, Sembiyan, Thamizharsi, Maaran, Anbarasi, Ponmani. Do not reuse names or use North Indian or generic placeholder names.';
+}
+
+const realLocationGuidance = `Use one or more real, named settings from this Tamil Nadu location guide and keep their atmosphere recognizable. COIMBATORE: Race Course, with its loop road, walking/running paths, trees and park; R.S. Puram, with residential streets alongside busy shopping roads; Town Hall, with dense traditional retail streets and bus traffic; Government Arts College; Government Men's Hostel; SS Briyani Hotel (only as a neutral public dining setting); Valankulam Lake and Ukkadam Periyakulam, with waterside paths, birds, bridges and city movement; Ganapathy and Singanallur, with residential and working-city character; Lakshmi Mills, with Coimbatore's textile heritage; Marudhamalai Temple, on a granite hill with Western Ghats greenery and city views; Isha Yoga Center, in the Velliangiri foothills with a calm, contemplative atmosphere. CUDDALORE DISTRICT: Panruti, a lively town associated with market gardens and regional produce; Neyveli Lignite Corporation (NLC), a major planned industrial township with a distinctive energy-sector setting; Chidambaram's Natarajar Temple, a historic temple complex known for Dravidian architecture and its cultural significance; Silver Beach and Devanampattinam, with open Bay of Bengal coast, palms, estuary and public recreation; Fort St. David, with historic coastal ruins. Choose locations that fit the scenario and do not falsely claim specific facilities or events. Real places are setting only: all people, businesses' actions, and story events are invented. Never portray actual staff as characters or imply that a named institution, business, temple, or its real staff did anything wrong. For these location-based cases, make the puzzle light and non-criminal: a harmless mix-up, misplaced event item, mistaken schedule, or community mystery; no violence, theft, fraud, damage, or other illegal activity. Keep religious and cultural places respectful.`;
+
+const namedLocations = [
+  { names: ['race course'], place: 'Race Course, Coimbatore', city: 'Coimbatore' },
+  { names: ['r.s. puram', 'rs puram'], place: 'R.S. Puram, Coimbatore', city: 'Coimbatore' },
+  { names: ['town hall'], place: 'Town Hall, Coimbatore', city: 'Coimbatore' },
+  { names: ['government arts college'], place: 'Government Arts College, Coimbatore', city: 'Coimbatore' },
+  { names: ['government men', 'mens hostel', "men's hostel"], place: "Government Men's Hostel, Coimbatore", city: 'Coimbatore' },
+  { names: ['ss briyani', 'ss biryani'], place: 'SS Briyani Hotel, Coimbatore', city: 'Coimbatore' },
+  { names: ['valankulam'], place: 'Valankulam Lake, Coimbatore', city: 'Coimbatore' },
+  { names: ['ukkadam lake', 'periyakulam'], place: 'Ukkadam Periyakulam, Coimbatore', city: 'Coimbatore' },
+  { names: ['ganapathy'], place: 'Ganapathy, Coimbatore', city: 'Coimbatore' },
+  { names: ['singanallur'], place: 'Singanallur, Coimbatore', city: 'Coimbatore' },
+  { names: ['lakshmi mills'], place: 'Lakshmi Mills, Coimbatore', city: 'Coimbatore' },
+  { names: ['marudhamalai', 'maruthamalai'], place: 'Marudhamalai Temple, Coimbatore', city: 'Coimbatore' },
+  { names: ['isha'], place: 'Isha Yoga Center, Coimbatore', city: 'Coimbatore' },
+  { names: ['silver beach'], place: 'Silver Beach, Cuddalore', city: 'Cuddalore' },
+  { names: ['devanampattinam'], place: 'Devanampattinam, Cuddalore', city: 'Cuddalore' },
+  { names: ['fort st. david', 'fort st david'], place: 'Fort St. David, Cuddalore', city: 'Cuddalore' },
+  { names: ['nlc', 'neyveli lignite'], place: 'Neyveli Lignite Corporation township, Cuddalore district', city: 'Cuddalore' },
+  { names: ['panruti'], place: 'Panruti, Cuddalore district', city: 'Cuddalore' },
+  { names: ['natarajar', 'nataraja temple', 'chidambaram temple'], place: 'Natarajar Temple, Chidambaram', city: 'Cuddalore' },
+];
+
+function selectRealSetting(scenario) {
+  const normalized = scenario.toLowerCase();
+  const named = namedLocations.find(({ names }) => names.some((name) => normalized.includes(name)));
+  if (named) return named;
+  let hash = 2166136261;
+  for (const character of normalized) hash = Math.imul(hash ^ character.charCodeAt(0), 16777619);
+  const city = normalized.includes('cuddalore') ? 'Cuddalore' : normalized.includes('coimbatore') ? 'Coimbatore' : hash % 2 === 0 ? 'Coimbatore' : 'Cuddalore';
+  const options = namedLocations.filter((location) => location.city === city);
+  return options[(hash >>> 1) % options.length];
 }
 
 function biblePrompt(scenario, settings) {
-  return `Create the CASE BIBLE for a fair, solvable, fully fictional detective mystery. Return one JSON object and no markdown.\n
+  const mainSetting = selectRealSetting(scenario);
+  return `Create the CASE BIBLE for a fair, solvable, fully fictional and playful mystery puzzle. Return one JSON object and no markdown.\n
 Required JSON shape (include every field):\n{
   "title":"string",
   "briefing":"150-250 words",
-  "setting":{"place":"fictional place","date":"YYYY-MM-DD","timeWindow":"HH:mm-HH:mm"},
+  "setting":{"place":"${mainSetting.place}","date":"YYYY-MM-DD","timeWindow":"HH:mm-HH:mm"},
   "suspects":[{"id":"s1","name":"string","age":30,"role":"string","publicBio":"string","secret":"string","alibi":"string","alibiIsTrue":true,"portraitPrompt":"ordinary fictional portrait, no identifiable real person"}],
   "culpritId":"one suspect id",
   "motive":"string","method":"string",
@@ -125,7 +161,7 @@ Required JSON shape (include every field):\n{
   "redHerrings":[{"id":"r1","description":"string","misdirectsTo":"innocent suspect id"}],
   "hints":["hint 1","hint 2","hint 3"]
 }\n
-Scenario: ${scenario}\nDifficulty: ${settings.difficulty}. Return exactly ${settings.suspectCount} suspects, with IDs s1 through s${settings.suspectCount}; use exactly three hints.\nLanguage and names: ${languageInstruction(settings.language)}\nRules: there is exactly one culprit. Every innocent suspect has a verifiable true alibi or an explicit innocent explanation. Include at least three key clues that jointly identify the culprit, and at least two red herrings. Every key clue's points field must be the culprit's valid suspect ID; clue type must be chat, photo, or cctv. All references and timestamps must be consistent. The briefing must be 150-250 words. Use fictional places. Keep a cozy-to-noir tone, with no graphic violence, actionable crime instructions, real-person likenesses, or real cases.`;
+Scenario: ${scenario}\nRequired primary location: ${mainSetting.place}. Name it in the setting and weave in its real, general atmosphere without inventing venue-specific claims. Difficulty: ${settings.difficulty}. Return exactly ${settings.suspectCount} suspects, with IDs s1 through s${settings.suspectCount}; use exactly three hints.\nLanguage and names: ${languageInstruction(settings.language)} Also use modern Tamil Nadu names where they fit, such as Kavin, Nila, Mugil, Mathi, Ezhil, Aadhavan, Oviyan, and Tamizhini, written in the selected language's script.\nReal setting and tone rules: ${realLocationGuidance}\nRules: there is exactly one fictional person responsible for the harmless mix-up, not a criminal culprit. Every other suspect has a clear innocent explanation. Include at least three key clues that jointly identify how the mix-up happened, and at least two harmless red herrings. Every key clue's points field must be the responsible suspect's valid ID; clue type must be chat, photo, or cctv. All references and timestamps must be consistent. The briefing must be 150-250 words. All people, businesses' actions, and events are fictional; real location names are allowed only as neutral settings. Never depict a real incident. If the scenario names a real incident, convert only its general educational theme into an entirely invented, harmless puzzle. Keep a playful, cozy-to-noir tone, with no violence, crime, illegal activity, real-person likenesses, or real cases.`;
 }
 
 function evidencePrompt(bible, language) {
@@ -134,7 +170,7 @@ function evidencePrompt(bible, language) {
   "photos":[{"id":"photo-1","caption":"string","timestamp":"HH:mm","location":"string","imagePrompt":"ordinary fictional phone photo, no readable text or identifiable real people","relatedClueId":"k1"}],
   "cctv":[{"id":"camera-1","cameraName":"string","location":"string","frames":[{"offsetSeconds":0,"timestamp":"HH:mm","imagePrompt":"fictional low-quality CCTV frame, no readable text or identifiable real people","caption":"string"}]}]
 }\n
-Generate 3-6 chats, 4-8 photos, and 2-4 CCTV cameras. Each camera needs 4-8 chronologically ordered frames. Include each key clue in the evidence type assigned in the bible; captions or chat text must state any information that could be missed in an image. Keep every timestamp consistent with the case timeline. Add believable irrelevant chat banter. Use the exact suspect names and preserve the evidence ID formats shown. Write every player-visible field in the selected case language: ${languageInstruction(language)} Never reveal the culprit, motive, method, secret, or solution in player-visible text.\nCASE BIBLE: ${JSON.stringify(bible)}`;
+Generate 3-6 chats, 4-8 photos, and 2-4 CCTV cameras. Each camera needs 4-8 chronologically ordered frames. Include each key clue in the evidence type assigned in the bible; captions or chat text must state any information that could be missed in an image. Keep every timestamp consistent with the case timeline. Add believable irrelevant chat banter. Use the exact suspect names and preserve the evidence ID formats shown. Write every player-visible field in the selected case language: ${languageInstruction(language)} The real location is only a respectful backdrop; do not imply real people or organizations were involved in the fictional events. Keep the puzzle non-criminal and harmless: no violence, theft, fraud, damage, or other illegal activity. Never reveal the responsible suspect, motive, method, secret, or solution in player-visible text.\nCASE BIBLE: ${JSON.stringify(bible)}`;
 }
 
 const walkthroughLead = {
