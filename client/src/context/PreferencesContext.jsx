@@ -14,12 +14,12 @@ function readPreference(key, fallback, allowed) {
 }
 
 export function PreferencesProvider({ children }) {
-  const [language, setLanguage] = useState(() => readPreference('mystery-language', 'en', languages));
+  const [language, setLanguage] = useState(() => readPreference('mystery-language-v2', 'tanglish', languages));
   const [theme, setTheme] = useState(() => readPreference('mystery-theme', 'dark', ['dark', 'light']));
 
   useEffect(() => {
     document.documentElement.lang = language === 'ta' ? 'ta' : 'en';
-    try { window.localStorage.setItem('mystery-language', language); } catch { /* Storage can be unavailable in private browsing. */ }
+    try { window.localStorage.setItem('mystery-language-v2', language); } catch { /* Storage can be unavailable in private browsing. */ }
   }, [language]);
 
   useEffect(() => {

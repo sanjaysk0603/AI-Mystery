@@ -1,27 +1,43 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { usePreferences } from '../context/PreferencesContext.jsx';
 
 export default function GlobalTools() {
   const { language, setLanguage, theme, setTheme, t } = usePreferences();
   const [helpOpen, setHelpOpen] = useState(false);
+  const [toastVisible, setToastVisible] = useState(false);
   const nextTheme = theme === 'dark' ? 'light' : 'dark';
+
+  useEffect(() => {
+    let timeout;
+    const showLanguageTip = () => {
+      setToastVisible(true);
+      window.clearTimeout(timeout);
+      timeout = window.setTimeout(() => setToastVisible(false), 7000);
+    };
+    window.addEventListener('mystery:logged-in', showLanguageTip);
+    return () => {
+      window.removeEventListener('mystery:logged-in', showLanguageTip);
+      window.clearTimeout(timeout);
+    };
+  }, []);
 
   return <>
     <aside className="global-tools" aria-label={t('common.help')}>
       <button type="button" className="tool-button help-button" onClick={() => setHelpOpen(true)}>
         <span aria-hidden="true">?</span><span>{t('common.help')}</span>
       </button>
-      <label className="language-tool">
-        <span className="sr-only">{t('common.language')}</span>
+      <label className={`language-tool${toastVisible ? ' language-tool-pulse' : ''}`}>
+        <span className="language-label">{t('common.languageShort')}</span>
         <select value={language} onChange={(event) => setLanguage(event.target.value)} aria-label={t('common.language')}>
           <option value="ta">தமிழ்</option>
           <option value="tanglish">Tanglish</option>
           <option value="en">English</option>
         </select>
       </label>
-      <button type="button" className="tool-button theme-button" onClick={() => setTheme(nextTheme)} aria-label={`${t('common.theme')}: ${t(`common.${nextTheme}`)}`}>
-        <span aria-hidden="true">{nextTheme === 'light' ? '☼' : '☾'}</span><span>{t(`common.${nextTheme}`)}</span>
+      <button type="button" className="tool-button theme-button" onClick={() => setTheme(nextTheme)} aria-label={t(`common.switchTo${nextTheme === 'light' ? 'Light' : 'Dark'}`)}>
+        <span aria-hidden="true">{nextTheme === 'light' ? '☼' : '◐'}</span><span>{t(`common.${nextTheme}Mode`)}</span>
       </button>
+      {toastVisible && <div className="language-toast" role="status"><span>{t('common.languageToast')}</span><button type="button" onClick={() => setToastVisible(false)} aria-label={t('common.close')}>×</button></div>}
     </aside>
 
     {helpOpen && <div className="help-backdrop" role="presentation" onMouseDown={(event) => { if (event.target === event.currentTarget) setHelpOpen(false); }}>

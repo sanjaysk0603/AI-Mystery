@@ -26,6 +26,13 @@ export default function LandingPage() {
           </div>
 
           <div className="rounded-2xl border border-slate-700 bg-slate-950/60 p-5">
+            <div className="detective-art" aria-hidden="true">
+              <svg viewBox="0 0 420 170" role="presentation">
+                <path d="M35 137h350M77 137V48h266v89M96 68h82v58H96zM242 68h82v58h-82zM103 75l68 44m0-44-68 44m147-44 68 44m0-44-68 44" />
+                <circle className="lens-orbit" cx="210" cy="76" r="31" /><path className="lens-handle" d="m232 99 28 28" />
+                <path d="M192 76h36m-18-18v36M210 137v-15m-10 15h20" />
+              </svg>
+            </div>
             <div className="mb-4 text-xs uppercase tracking-[0.22em] text-slate-400">{t('landing.example')}</div>
             <div className="space-y-3 text-sm text-slate-300">
               <p>{t('landing.sample')}</p>

@@ -20,6 +20,11 @@ export default function AuthPage({ mode }) {
         ? await registerUser(form)
         : await loginUser({ email: form.email, password: form.password });
       setUser(response.user);
+      try {
+        const previousIndex = Number(window.sessionStorage.getItem('mystery-default-scenario-index') ?? -1);
+        window.sessionStorage.setItem('mystery-default-scenario-index', String((previousIndex + 1) % 3));
+      } catch { /* The new-case form will use its first sample if session storage is unavailable. */ }
+      window.dispatchEvent(new Event('mystery:logged-in'));
       navigate('/dashboard');
     } catch (err) {
       setError(err.message);

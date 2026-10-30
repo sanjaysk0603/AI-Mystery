@@ -1,6 +1,7 @@
 export const messages = {
   en: {
-    'common.help': 'How to play', 'common.language': 'Language', 'common.theme': 'Theme', 'common.dark': 'Dark', 'common.light': 'Light', 'common.close': 'Close',
+    'common.help': 'How to play', 'common.language': 'Language', 'common.languageShort': 'Language', 'common.theme': 'Theme', 'common.dark': 'Dark', 'common.light': 'Light', 'common.darkMode': 'Dark mode', 'common.lightMode': 'Light mode', 'common.switchToLight': 'Switch to light mode', 'common.switchToDark': 'Switch to dark mode', 'common.close': 'Close',
+    'common.languageToast': 'Explore this case in Tanglish, or switch to English anytime.',
     'help.title': 'How to play', 'help.intro': 'Welcome, investigator. Follow the clues, compare the stories, and make one final accusation.',
     'help.step1.title': '1. Open a case', 'help.step1.body': 'Describe a fictional mystery. Choose the case language, difficulty, and number of suspects.',
     'help.step2.title': '2. Investigate', 'help.step2.body': 'Read the briefing, compare suspect alibis, inspect chats, photos, and CCTV, and pin useful clues.',
@@ -30,7 +31,8 @@ export const messages = {
     'result.verdict': 'VERDICT · FILE CLOSED', 'result.solved': 'Case solved.', 'result.wrong': 'Wrong suspect.', 'result.score': 'Score', 'result.culprit': 'The culprit was', 'result.reasoning': 'Your reasoning', 'result.motive': 'Motive & method', 'result.timeline': 'Timeline', 'result.solution': 'How it was solved', 'result.defaultSolution': 'The timeline brings the clues together.', 'result.evidence': 'Decisive evidence', 'result.accused': 'You accused {name}.', 'result.dashboard': 'Back to your case board',
   },
   ta: {
-    'common.help': 'விளையாடுவது எப்படி', 'common.language': 'மொழி', 'common.theme': 'தோற்றம்', 'common.dark': 'இருள்', 'common.light': 'வெளிச்சம்', 'common.close': 'மூடு',
+    'common.help': 'விளையாடுவது எப்படி', 'common.language': 'மொழி', 'common.languageShort': 'மொழி', 'common.theme': 'தோற்றம்', 'common.dark': 'இருள்', 'common.light': 'வெளிச்சம்', 'common.darkMode': 'இருள் தோற்றம்', 'common.lightMode': 'வெளிச்சத் தோற்றம்', 'common.switchToLight': 'வெளிச்சத் தோற்றத்திற்கு மாறு', 'common.switchToDark': 'இருள் தோற்றத்திற்கு மாறு', 'common.close': 'மூடு',
+    'common.languageToast': 'இந்த வழக்கைத் தமிழில் பாருங்கள்; ஆங்கிலத்திலும் முயற்சி செய்யலாம்!',
     'help.title': 'விளையாடுவது எப்படி', 'help.intro': 'விசாரணையாளரே, வரவேற்கிறோம். தடயங்களைப் பார்த்து, கதைகளை ஒப்பிட்டு, இறுதியில் ஒருவரை குற்றவாளி எனக் குறிப்பிடுங்கள்.',
     'help.step1.title': '1. வழக்கைத் தொடங்குங்கள்', 'help.step1.body': 'ஒரு கற்பனை மர்மத்தை விவரிக்கவும். வழக்கின் மொழி, கடினநிலை, சந்தேக நபர்களின் எண்ணிக்கையைத் தேர்வு செய்யவும்.',
     'help.step2.title': '2. விசாரிக்கவும்', 'help.step2.body': 'வழக்கு அறிக்கையைப் படித்து, அலிபிகளை ஒப்பிட்டு, அரட்டைகள், புகைப்படங்கள், CCTV-யைப் பாருங்கள். முக்கிய தடயங்களைப் பின் செய்யுங்கள்.',
@@ -60,7 +62,8 @@ export const messages = {
     'result.verdict': 'தீர்ப்பு · கோப்பு முடிந்தது', 'result.solved': 'வழக்கு தீர்க்கப்பட்டது.', 'result.wrong': 'தவறான சந்தேக நபர்.', 'result.score': 'மதிப்பெண்', 'result.culprit': 'குற்றவாளி', 'result.reasoning': 'உங்கள் காரணம்', 'result.motive': 'காரணமும் முறையும்', 'result.timeline': 'நேரவரிசை', 'result.solution': 'வழக்கு தீர்ந்த விதம்', 'result.defaultSolution': 'நேரவரிசை தடயங்களை ஒன்றாக இணைக்கிறது.', 'result.evidence': 'முக்கிய தடயங்கள்', 'result.accused': 'நீங்கள் குற்றம் சாட்டியது {name}.', 'result.dashboard': 'வழக்கு பலகைக்குத் திரும்பு',
   },
   tanglish: {
-    'common.help': 'Eppadi vilaiyaadhuvadhu', 'common.language': 'Mozhi', 'common.theme': 'Theme', 'common.dark': 'Dark', 'common.light': 'Light', 'common.close': 'Moodu',
+    'common.help': 'Eppadi vilaiyaadhuvadhu', 'common.language': 'Language', 'common.languageShort': 'Language', 'common.theme': 'Theme', 'common.dark': 'Dark', 'common.light': 'Light', 'common.darkMode': 'Dark mode', 'common.lightMode': 'Light mode', 'common.switchToLight': 'Light mode-ku maathunga', 'common.switchToDark': 'Dark mode-ku maathunga', 'common.close': 'Moodu',
+    'common.languageToast': 'Orey case-ai Tanglish-la paarunga; English-layum anytime try pannalaam!',
     'help.title': 'Eppadi vilaiyaadhuvadhu', 'help.intro': 'Investigator, welcome. Clues-ai paarunga, stories-ai compare pannunga, kadaisiyil oru accusation pannunga.',
     'help.step1.title': '1. Case open pannunga', 'help.step1.body': 'Oru fictional mystery-ai describe pannunga. Case language, difficulty, suspects count select pannunga.',
     'help.step2.title': '2. Investigate pannunga', 'help.step2.body': 'Briefing padichu, alibi compare panni, chats, photos, CCTV paarunga. Mukkiya clues-ai pin pannunga.',
@@ -90,3 +93,18 @@ export const messages = {
     'result.verdict': 'VERDICT · FILE CLOSED', 'result.solved': 'Case solve aayiduchu.', 'result.wrong': 'Wrong suspect.', 'result.score': 'Score', 'result.culprit': 'Culprit', 'result.reasoning': 'Unga reasoning', 'result.motive': 'Motive & method', 'result.timeline': 'Timeline', 'result.solution': 'Case eppadi solve aachu', 'result.defaultSolution': 'Timeline clues-ai connect pannudhu.', 'result.evidence': 'Decisive evidence', 'result.accused': 'Neenga accuse pannadhu {name}.', 'result.dashboard': 'Case board-ku thirumba',
   },
 };
+
+messages.en['generating.failedMessage'] = 'We could not verify this mystery. Please try again.';
+messages.ta['generating.failedMessage'] = 'இந்த மர்மத்தை சரிபார்க்க முடியவில்லை. மீண்டும் முயற்சிக்கவும்.';
+messages.tanglish['generating.failedMessage'] = 'Indha mystery-ai verify panna mudiyala. Konjam details maathi thirumba try pannunga.';
+
+messages.en['new.sample1'] = "At Government Arts College's cultural day, two event placards were swapped. Follow the clues to find where each belongs.";
+messages.en['new.sample2'] = "At Panruti's community fair, three display labels got mixed up. Use the clues to match each label to its stall.";
+messages.en['new.sample3'] = "At Silver Beach's evening art walk, a set of map markers was rearranged. Work out the intended route from the clues.";
+messages.ta['new.sample1'] = 'கோயம்புத்தூர் அரசு கலைக் கல்லூரி விழாவில் இரண்டு நிகழ்ச்சிப் பலகைகள் இடம் மாறின. தடயங்கள் மூலம் அவற்றின் சரியான இடத்தைக் கண்டுபிடிக்கவும்.';
+messages.ta['new.sample2'] = 'பண்ருட்டி ஊர் விழாவில் மூன்று காட்சிப் பெயர்ப் பலகைகள் மாறிவிட்டன. தடயங்களை வைத்து ஒவ்வொன்றும் எந்தக் கடைக்குச் சேரும் எனக் கண்டுபிடிக்கவும்.';
+messages.ta['new.sample3'] = 'கடலூர் சில்வர் கடற்கரையின் மாலை கலைநிகழ்வில் வரைபடக் குறியீடுகள் இடம் மாறின. தடயங்கள் மூலம் சரியான வழியைக் கண்டுபிடிக்கவும்.';
+messages.tanglish['new.sample1'] = 'Coimbatore Government Arts College cultural day-la rendu event board maari pochu. Clues vechu sariyana idathai kandupidunga.';
+messages.tanglish['new.sample2'] = 'Panruti oor thiruvizha-la moonu display label mix aayiduchu. Clues vechu ovvoru label-um endha stall-nu kandupidunga.';
+messages.tanglish['new.sample3'] = 'Cuddalore Silver Beach evening art walk-la map markers idam maari pochu. Clues vechu correct route-ai kandupidunga.';
+for (const language of Object.values(messages)) language['new.sample'] = language['new.sample1'];

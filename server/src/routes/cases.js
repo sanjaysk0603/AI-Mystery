@@ -17,14 +17,18 @@ const createCaseSchema = z.object({
   settings: z.object({
     difficulty: z.enum(['easy', 'medium', 'hard']).default('medium'),
     suspectCount: z.number().int().min(3).max(6).default(4),
-    language: z.enum(['ta', 'tanglish', 'en']).default('en'),
-  }).default({ difficulty: 'medium', suspectCount: 4, language: 'en' }),
+    language: z.enum(['ta', 'tanglish', 'en']).default('tanglish'),
+  }).default({ difficulty: 'medium', suspectCount: 4, language: 'tanglish' }),
 });
 
 const accusationSchema = z.object({
   suspectId: z.string().min(1),
   justification: z.string().min(10).max(500),
 });
+
+function asyncRoute(handler) {
+  return (req, res, next) => Promise.resolve(handler(req, res, next)).catch(next);
+}
 
 function summaryForCase(entry) {
   const attempt = attempts.find((item) => item.caseId === entry._id && item.playerId === entry.ownerId);
@@ -55,15 +59,13 @@ async function generateInBackground(entry) {
     entry.progress = { stage: stages[0], percent: 8 };
     let generated;
     let valid = false;
-    for (let bibleAttempt = 0; bibleAttempt < 2 && !valid; bibleAttempt += 1) {
-      for (let evidenceAttempt = 0; evidenceAttempt < 2 && !valid; evidenceAttempt += 1) {
-        generated = await generateMysteryCase(entry.scenario, entry.settings, entry._id, async (stage, percent) => {
-          entry.progress = { stage, percent };
-          entry.updatedAt = new Date().toISOString();
-          await saveCaseRecord(entry);
-        });
-        valid = validateCaseOutputs(generated) && await validateSolvability(generated);
-      }
+    for (let attempt = 0; attempt < 2 && !valid; attempt += 1) {
+      generated = await generateMysteryCase(entry.scenario, entry.settings, entry._id, async (stage, percent) => {
+        entry.progress = { stage, percent };
+        entry.updatedAt = new Date().toISOString();
+        await saveCaseRecord(entry);
+      });
+      valid = validateCaseOutputs(generated) && await validateSolvability(generated);
     }
     if (!valid) throw new Error('We could not verify this mystery. Please try again.');
     entry.public = generated.public;
@@ -82,7 +84,7 @@ async function generateInBackground(entry) {
 
 caseRouter.get('/health', (_req, res) => res.json({ ok: true }));
 
-caseRouter.post('/', requireAuth, creationLimiter, async (req, res) => {
+caseRouter.post('/', requireAuth, creationLimiter, asyncRoute(async (req, res) => {
   const parsed = createCaseSchema.safeParse(req.body);
   if (!parsed.success) {
     return res.status(400).json({ error: { code: 'VALIDATION_ERROR', message: 'Invalid case payload.' } });
@@ -121,7 +123,7 @@ caseRouter.post('/', requireAuth, creationLimiter, async (req, res) => {
   void generateInBackground(caseDocument);
 
   return res.status(202).json({ id: caseDocument._id });
-});
+}));
 
 caseRouter.get('/', requireAuth, (req, res) => {
   const userCases = cases.filter((entry) => entry.ownerId === req.user._id).map(summaryForCase);

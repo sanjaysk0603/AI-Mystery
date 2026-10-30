@@ -42,13 +42,13 @@ export async function moderateScenario(scenario) {
     return { allowed: false, reason: 'Please rewrite the scenario without real people or actionable crime details.' };
   }
 
-  for (let attempt = 0; attempt < 3; attempt += 1) {
-    const model = attempt < 2 ? env.GEMINI_TEXT_FALLBACK_MODEL : env.GEMINI_TEXT_MODEL;
+  for (let attempt = 0; attempt < 2; attempt += 1) {
+    const model = attempt === 0 ? env.GEMINI_TEXT_MODEL : env.GEMINI_TEXT_FALLBACK_MODEL;
     try {
       const response = await ai.models.generateContent({
         model,
-        contents: `Review this proposed fictional mystery scenario. Block sexual content, sexual violence, graphic gore, harm involving minors, terrorism, real-world crime instructions, hate, and named identifiable real people (including public figures). Only allow cozy-to-noir fictional theft, fraud, sabotage, disappearance, or cheating scenarios. Return JSON with an allowed boolean only.\nScenario: ${clean}`,
-        config: { responseMimeType: 'application/json', abortSignal: AbortSignal.timeout(60_000) },
+        contents: `Review this proposed mystery scenario. Block sexual content, sexual violence, graphic gore, harm involving minors, terrorism, real-world crime instructions, hate, named identifiable real people (including public figures), and real incidents presented as a game. Allow fictional, harmless puzzles such as misplaced objects, event mix-ups, scheduling confusion, and cozy fictional mysteries. Real place names may be used as neutral settings; reject allegations about real people or organizations. Return JSON with an allowed boolean only.\nScenario: ${clean}`,
+        config: { responseMimeType: 'application/json', abortSignal: AbortSignal.timeout(12_000) },
       });
       const result = moderationResult.parse(JSON.parse(response.text));
       return result.allowed
@@ -56,7 +56,7 @@ export async function moderateScenario(scenario) {
         : { allowed: false, reason: 'Please rewrite the scenario without real people or unsafe content.' };
     } catch (error) {
       logModerationError(error, model, attempt + 1);
-      if (attempt < 2) await new Promise((resolve) => setTimeout(resolve, 500 * (2 ** attempt)));
+      if (attempt < 1) await new Promise((resolve) => setTimeout(resolve, 250));
     }
   }
   return { allowed: false, unavailable: true, reason: 'We could not review that scenario right now. Please try again shortly.' };
