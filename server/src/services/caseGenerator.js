@@ -1,5 +1,6 @@
 import { GoogleGenAI } from '@google/genai';
 import { saveImage } from './storage/index.js';
+import { compressImage } from './storage/compress.js';
 import { z } from 'zod';
 import { env } from '../config/env.js';
 
@@ -62,6 +63,7 @@ async function generateJson(prompt, schema, model = env.GEMINI_TEXT_MODEL, timeo
 }
 
 async function generateStoredImage(prompt, key) {
+  if (env.GEMINI_IMAGE_MODEL === 'disabled') return { url: null, imageStatus: 'placeholder' };
   if (Date.now() < imageQuotaPausedUntil) return { url: null, imageStatus: 'placeholder' };
   for (let attempt = 0; attempt < 3; attempt += 1) {
     const started = Date.now();
@@ -73,8 +75,8 @@ async function generateStoredImage(prompt, key) {
       });
       const imagePart = response.candidates?.[0]?.content?.parts?.find((part) => part.inlineData?.data);
       if (!imagePart) throw new Error('No image returned.');
-      const mimeType = imagePart.inlineData.mimeType || 'image/png';
-      const url = await saveImage(key, Buffer.from(imagePart.inlineData.data, 'base64'), mimeType);
+      const compressed = await compressImage(Buffer.from(imagePart.inlineData.data, 'base64'));
+      const url = await saveImage(key, compressed);
       console.info(JSON.stringify({ event: 'gemini_image', model: env.GEMINI_IMAGE_MODEL, latencyMs: Date.now() - started, attempt: attempt + 1 }));
       return { url, imageStatus: 'ready' };
     } catch (error) {

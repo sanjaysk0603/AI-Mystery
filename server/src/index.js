@@ -10,6 +10,7 @@ import mongoose from 'mongoose';
 import { env } from './config/env.js';
 import { authRouter } from './routes/auth.js';
 import { caseRouter } from './routes/cases.js';
+import { imageRouter } from './routes/images.js';
 import { errorHandler } from './middleware/error.js';
 import { connectStore } from './data/store.js';
 
@@ -34,6 +35,7 @@ app.get('/api/health', (_req, res) => {
 });
 app.use('/api/auth', authRouter);
 app.use('/api/cases', caseRouter);
+if (env.STORAGE_DRIVER === 'mongo') app.use('/api/images', imageRouter);
 app.use('/api', (_req, res) => res.status(404).json({ error: { code: 'NOT_FOUND', message: 'API endpoint not found.' } }));
 
 const clientDist = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '../../client/dist');

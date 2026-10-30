@@ -2,15 +2,11 @@ services:
   - type: web
     name: ai-mystery-room
     runtime: node
-    plan: starter
+    plan: free
     buildCommand: npm ci && npm run build
     startCommand: npm --prefix server start
     healthCheckPath: /api/health
     autoDeploy: true
-    disk:
-      name: mystery-uploads
-      mountPath: /var/data
-      sizeGB: 1
     envVars:
       - key: NODE_ENV
         value: production
@@ -29,10 +25,8 @@ services:
       - key: GEMINI_TEXT_FALLBACK_MODEL
         value: gemini-3.5-flash-lite
       - key: GEMINI_IMAGE_MODEL
-        value: gemini-3.1-flash-image
+        value: disabled
       - key: MAX_ACTIVE_CASES_PER_USER
         value: "3"
       - key: STORAGE_DRIVER
-        value: local
-      - key: LOCAL_UPLOAD_DIR
-        value: /var/data/uploads
+        value: mongo
