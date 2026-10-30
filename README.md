@@ -12,8 +12,10 @@ AI Mystery Room turns a short scenario into a fictional detective case. Players 
 
 1. Install packages from the repository root with `npm install`.
 2. Configure `server/.env` with `PORT`, `MONGODB_URI`, `JWT_SECRET`, `CLIENT_ORIGIN`, `GEMINI_API_KEY`, `GEMINI_TEXT_MODEL`, `GEMINI_TEXT_FALLBACK_MODEL`, `GEMINI_IMAGE_MODEL`, `MAX_ACTIVE_CASES_PER_USER`, `STORAGE_DRIVER`, and `LOCAL_UPLOAD_DIR`. For S3 storage, also set `AWS_REGION`, `AWS_S3_BUCKET`, `AWS_ACCESS_KEY_ID`, and `AWS_SECRET_ACCESS_KEY`.
-3. Configure `client/.env` with `VITE_API_URL=http://localhost:5000/api`.
+3. Configure `client/.env` with `VITE_API_URL=/api` (the Vite development proxy forwards API and upload requests to port 5000).
 4. Start both apps with `npm run dev`.
+
+For a hosted deployment, follow [DEPLOY.md](DEPLOY.md). The Render setup builds the client and serves it from the Express app, so the client and API share one origin.
 
 The API is at `http://localhost:5000`; the Vite app is at `http://localhost:5173`. Generated media is saved under `server/uploads` with the local storage driver. Set `STORAGE_DRIVER=s3` and fill the AWS settings to use S3.
 
